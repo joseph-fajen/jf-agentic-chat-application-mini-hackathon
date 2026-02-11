@@ -61,6 +61,9 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
           <Send className="size-4" />
         </Button>
       </div>
+      <p className="text-muted-foreground/50 mt-1.5 text-center text-xs">
+        Enter to send · Shift+Enter for new line
+      </p>
     </div>
   );
 }

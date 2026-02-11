@@ -49,6 +49,7 @@ function parseSSELine(line: string): ParsedSSELine {
 
 export async function streamChatCompletion(
   history: Message[],
+  signal?: AbortSignal,
 ): Promise<{ stream: ReadableStream; fullResponse: Promise<string> }> {
   logger.info({ messageCount: history.length }, "stream.chat_started");
 
@@ -65,6 +66,7 @@ export async function streamChatCompletion(
         messages: buildMessages(history),
         stream: true,
       }),
+      signal: signal ?? null,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown fetch error";

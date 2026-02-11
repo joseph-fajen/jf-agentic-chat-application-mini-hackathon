@@ -40,18 +40,38 @@ export async function POST(request: NextRequest) {
     // Stream completion
     const { stream, fullResponse } = await streamChatCompletion(history);
 
-    // Save assistant message after stream completes
-    fullResponse.then(async (fullText) => {
-      try {
-        await addMessage(conversationId, "assistant", fullText);
-        logger.info({ conversationId }, "chat.assistant_message_saved");
-      } catch (err) {
-        logger.error({ conversationId, error: err }, "chat.assistant_message_save_failed");
-      }
+    // Wrap the stream to save assistant message after completion
+    const reader = stream.getReader();
+    const wrappedStream = new ReadableStream({
+      async pull(controller) {
+        const { done, value } = await reader.read();
+        if (!done) {
+          controller.enqueue(value);
+          return;
+        }
+        // Stream finished — save assistant message
+        const encoder = new TextEncoder();
+        try {
+          const fullText = await fullResponse;
+          await addMessage(conversationId, "assistant", fullText);
+          logger.info({ conversationId }, "chat.assistant_message_saved");
+          controller.enqueue(
+            encoder.encode(`data: ${JSON.stringify({ type: "done", saved: true })}\n\n`),
+          );
+        } catch (err) {
+          logger.error({ conversationId, error: err }, "chat.assistant_message_save_failed");
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ type: "error", message: "Failed to save response" })}\n\n`,
+            ),
+          );
+        }
+        controller.close();
+      },
     });
 
     // Return SSE response
-    return new Response(stream, {
+    return new Response(wrappedStream, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",

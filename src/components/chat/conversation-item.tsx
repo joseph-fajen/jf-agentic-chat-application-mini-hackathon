@@ -4,6 +4,16 @@ import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import type { KeyboardEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -32,6 +42,7 @@ export function ConversationItem({
   onDelete,
 }: ConversationItemProps) {
   const [isRenaming, setIsRenaming] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [renameValue, setRenameValue] = useState(title);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -105,12 +116,29 @@ export function ConversationItem({
             <Pencil className="size-3.5" />
             Rename
           </DropdownMenuItem>
-          <DropdownMenuItem variant="destructive" onClick={() => onDelete(id)}>
+          <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteOpen(true)}>
             <Trash2 className="size-3.5" />
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete conversation?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this conversation and all its messages.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={() => onDelete(id)}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -21,8 +21,18 @@ interface MessageListProps {
 
 export function MessageList({ messages, streamingContent, isStreaming }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const { isScrolledToBottom } = useAutoScroll(containerRef);
+  const { scrollToBottom, isScrolledToBottom } = useAutoScroll(containerRef);
+  const prevMessageCountRef = useRef(messages.length);
 
+  // Auto-scroll when new messages are added (e.g., user sends a message)
+  useEffect(() => {
+    if (messages.length > prevMessageCountRef.current) {
+      scrollToBottom();
+    }
+    prevMessageCountRef.current = messages.length;
+  }, [messages.length, scrollToBottom]);
+
+  // Auto-scroll during streaming when user hasn't scrolled up
   useEffect(() => {
     if (isScrolledToBottom()) {
       const el = containerRef.current;

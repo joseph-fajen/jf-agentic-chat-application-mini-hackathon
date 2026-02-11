@@ -152,10 +152,10 @@ describe("POST /api/chat/send", () => {
       headers: { "Content-Type": "application/json" },
     });
 
-    await POST(request);
+    const response = await POST(request);
 
-    // Wait for the fire-and-forget assistant message save
-    await new Promise((resolve) => setTimeout(resolve, 50));
+    // Consume the stream so the assistant save fires in the pull handler
+    await response.text();
 
     // User message + assistant message
     expect(mockCreateMessage).toHaveBeenCalledTimes(2);

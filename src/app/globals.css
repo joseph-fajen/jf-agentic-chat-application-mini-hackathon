@@ -180,3 +180,8 @@
   --tw-prose-links: oklch(0.65 0.18 250);
   --tw-prose-code: oklch(0.75 0.1 250);
 }
+
+/* Ensure code blocks don't overflow on mobile */
+.prose pre {
+  overflow-x: auto;
+}

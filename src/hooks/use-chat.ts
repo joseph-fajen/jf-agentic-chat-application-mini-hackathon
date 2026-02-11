@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { useLocalStorage } from "./use-local-storage";
 
@@ -38,7 +39,18 @@ async function readSSEStream(
         return accumulated;
       }
       try {
-        const parsed = JSON.parse(data) as { content?: string };
+        const parsed = JSON.parse(data) as {
+          content?: string;
+          type?: string;
+          message?: string;
+        };
+        if (parsed.type === "error") {
+          toast.error(parsed.message ?? "Response may not have been saved");
+          continue;
+        }
+        if (parsed.type === "done") {
+          continue;
+        }
         if (parsed.content) {
           accumulated += parsed.content;
           onChunk(accumulated);
@@ -73,7 +85,9 @@ export function useChat() {
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     if (!activeConversationId) {
@@ -82,6 +96,7 @@ export function useChat() {
     }
 
     const fetchMessages = async () => {
+      setIsLoadingMessages(true);
       try {
         const res = await fetch(`/api/chat/conversations/${activeConversationId}/messages`);
         if (res.ok) {
@@ -89,7 +104,9 @@ export function useChat() {
           setMessages(data.messages);
         }
       } catch {
-        // Ignore fetch errors
+        toast.error("Failed to load messages");
+      } finally {
+        setIsLoadingMessages(false);
       }
     };
 
@@ -105,6 +122,9 @@ export function useChat() {
       setIsStreaming(true);
       setStreamingContent("");
 
+      const abortController = new AbortController();
+      abortControllerRef.current = abortController;
+
       const tempUserMessage = makeTempMessage(activeConversationId ?? "", "user", content);
       setMessages((prev) => [...prev, tempUserMessage]);
 
@@ -116,6 +136,7 @@ export function useChat() {
             content,
             conversationId: activeConversationId ?? undefined,
           }),
+          signal: abortController.signal,
         });
 
         if (!res.ok) {
@@ -150,9 +171,14 @@ export function useChat() {
           );
           setMessages((prev) => [...prev, assistantMessage]);
         }
-      } catch {
-        // Could show error toast here
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          // Intentional abort — no toast needed
+        } else {
+          toast.error("Failed to send message");
+        }
       } finally {
+        abortControllerRef.current = null;
         setIsStreaming(false);
         setStreamingContent("");
       }
@@ -161,11 +187,13 @@ export function useChat() {
   );
 
   const selectConversation = useCallback((id: string) => {
+    abortControllerRef.current?.abort();
     setActiveConversationId(id);
     setStreamingContent("");
   }, []);
 
   const createNewChat = useCallback(() => {
+    abortControllerRef.current?.abort();
     setActiveConversationId(null);
     setMessages([]);
     setStreamingContent("");
@@ -183,7 +211,7 @@ export function useChat() {
           updateItem(id, { title });
         }
       } catch {
-        // Ignore errors
+        toast.error("Failed to rename conversation");
       }
     },
     [updateItem],
@@ -199,7 +227,7 @@ export function useChat() {
           setMessages([]);
         }
       } catch {
-        // Ignore errors
+        toast.error("Failed to delete conversation");
       }
     },
     [activeConversationId, removeItem],
@@ -210,6 +238,7 @@ export function useChat() {
     activeConversationId,
     messages,
     isStreaming,
+    isLoadingMessages,
     streamingContent,
     sendMessage,
     selectConversation,

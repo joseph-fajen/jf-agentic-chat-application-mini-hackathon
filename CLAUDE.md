@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Reference
+
+```bash
+# After ANY code change, run:
+bun run lint && npx tsc --noEmit
+
+# Before committing:
+bun test
+```
+
+**Critical rules:**
+- Import Zod from `zod/v4`, not `zod`
+- Use named exports (default exports only for Next.js pages/layouts)
+- Features go in `src/features/{name}/` following vertical slice pattern
+- Never import from `repository.ts` outside its feature - use `service.ts`
+- Log with action states: `action_started`, `action_completed`, `action_failed`
+
 ## Commands
 
 ```bash
@@ -273,6 +290,13 @@ bunx shadcn@canary add dialog alert-dialog
 - `src/components/` - app-level components (theme-provider, theme-toggle)
 - `src/shared/components/` - custom shared components
 - `src/lib/utils.ts` - `cn()` utility for merging Tailwind classes
+
+## React & Next.js Patterns
+
+- **Server Components** (default): Use for data fetching, database access, keeping secrets server-side
+- **Client Components** (`"use client"`): Use for interactivity, hooks, browser APIs, event handlers
+- Place `"use client"` at the top of files that need client-side features
+- Prefer Server Components; only add `"use client"` when required
 
 ## Code Style
 

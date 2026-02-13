@@ -66,10 +66,14 @@ export const projects = pgTable(t("projects"), {
 /**
  * Conversations table - stores chat conversations.
  * No owner since auth is not required.
+ * Supports branching: parentConversationId references the source conversation,
+ * branchFromMessageId references the message where the fork occurred.
  */
 export const chatConversations = pgTable(t("chat_conversations"), {
   id: uuid("id").primaryKey().defaultRandom(),
   title: text("title").notNull(),
+  parentConversationId: uuid("parent_conversation_id"),
+  branchFromMessageId: uuid("branch_from_message_id"),
   ...timestamps,
 });
 

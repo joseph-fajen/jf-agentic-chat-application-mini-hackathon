@@ -61,11 +61,13 @@ async function setup() {
   `);
   console.log(`  ${p("projects")}`);
 
-  // 3. Chat conversations table
+  // 3. Chat conversations table (with branching support)
   await sql.unsafe(`
     CREATE TABLE IF NOT EXISTS "${p("chat_conversations")}" (
       "id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
       "title" text NOT NULL,
+      "parent_conversation_id" uuid REFERENCES "${p("chat_conversations")}"("id") ON DELETE SET NULL,
+      "branch_from_message_id" uuid,
       "created_at" timestamp DEFAULT now() NOT NULL,
       "updated_at" timestamp DEFAULT now() NOT NULL
     )
@@ -84,6 +86,24 @@ async function setup() {
     )
   `);
   console.log(`  ${p("chat_messages")}`);
+
+  // 5. Add foreign key for branch_from_message_id (after messages table exists)
+  await sql.unsafe(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.table_constraints
+        WHERE constraint_name = '${p("chat_conversations")}_branch_from_message_fk'
+      ) THEN
+        ALTER TABLE "${p("chat_conversations")}"
+        ADD CONSTRAINT "${p("chat_conversations")}_branch_from_message_fk"
+        FOREIGN KEY ("branch_from_message_id")
+        REFERENCES "${p("chat_messages")}"("id")
+        ON DELETE SET NULL;
+      END IF;
+    END $$;
+  `);
+  console.log(`  Added branch_from_message_id foreign key`);
 
   console.log("\nDone! All tables created.");
 

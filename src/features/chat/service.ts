@@ -1,6 +1,10 @@
 import { getLogger } from "@/core/logging";
 
-import { ConversationNotFoundError } from "./errors";
+import {
+  ConversationNotFoundError,
+  MessageNotFoundError,
+  MessageNotInConversationError,
+} from "./errors";
 import type { Conversation, Message } from "./models";
 import * as repository from "./repository";
 
@@ -84,4 +88,60 @@ export function generateTitleFromMessage(content: string): string {
     return trimmed;
   }
   return `${trimmed.substring(0, 50)}...`;
+}
+
+export async function forkConversation(
+  conversationId: string,
+  messageId: string,
+): Promise<Conversation> {
+  logger.info({ conversationId, messageId }, "conversation.fork_started");
+
+  // Verify source conversation exists
+  const sourceConversation = await repository.findConversationById(conversationId);
+  if (!sourceConversation) {
+    logger.warn({ conversationId }, "conversation.fork_failed_not_found");
+    throw new ConversationNotFoundError(conversationId);
+  }
+
+  // Verify message exists
+  const forkMessage = await repository.findMessageById(messageId);
+  if (!forkMessage) {
+    logger.warn({ messageId }, "conversation.fork_failed_message_not_found");
+    throw new MessageNotFoundError(messageId);
+  }
+
+  // Verify message belongs to conversation
+  if (forkMessage.conversationId !== conversationId) {
+    logger.warn({ messageId, conversationId }, "conversation.fork_failed_message_mismatch");
+    throw new MessageNotInConversationError(messageId, conversationId);
+  }
+
+  // Get messages up to fork point
+  const messagesToCopy = await repository.findMessagesUpToId(conversationId, forkMessage.createdAt);
+
+  // Create branch title
+  const branchTitle = sourceConversation.title.includes("(branch)")
+    ? sourceConversation.title
+    : `${sourceConversation.title} (branch)`;
+
+  // Create new conversation with copied messages
+  const newConversation = await repository.createConversationWithMessages(
+    {
+      title: branchTitle,
+      parentConversationId: conversationId,
+      branchFromMessageId: messageId,
+    },
+    messagesToCopy.map((m) => ({ role: m.role, content: m.content })),
+  );
+
+  logger.info(
+    {
+      conversationId,
+      newConversationId: newConversation.id,
+      messagesCopied: messagesToCopy.length,
+    },
+    "conversation.fork_completed",
+  );
+
+  return newConversation;
 }

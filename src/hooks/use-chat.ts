@@ -240,6 +240,41 @@ export function useChat() {
     [activeConversationId, removeItem],
   );
 
+  const forkConversation = useCallback(
+    async (conversationId: string, messageId: string) => {
+      try {
+        const res = await fetch(`/api/chat/conversations/${conversationId}/fork`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messageId }),
+        });
+
+        if (!res.ok) {
+          throw new Error("Failed to fork story");
+        }
+
+        const data = (await res.json()) as {
+          conversation: { id: string; title: string; updatedAt: string };
+        };
+
+        // Add new conversation to list
+        addItem({
+          id: data.conversation.id,
+          title: data.conversation.title,
+          updatedAt: data.conversation.updatedAt,
+        });
+
+        // Switch to new conversation (will trigger message fetch)
+        setActiveConversationId(data.conversation.id);
+
+        toast.success("Story forked successfully");
+      } catch {
+        toast.error("Failed to fork story");
+      }
+    },
+    [addItem],
+  );
+
   return {
     conversations,
     activeConversationId,
@@ -252,5 +287,6 @@ export function useChat() {
     createNewChat,
     renameConversation,
     deleteConversation,
+    forkConversation,
   };
 }

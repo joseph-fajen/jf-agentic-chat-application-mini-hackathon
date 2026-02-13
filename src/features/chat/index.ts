@@ -7,23 +7,32 @@ export type { ChatErrorCode } from "./errors";
 export {
   ChatError,
   ConversationNotFoundError,
+  MessageNotFoundError,
+  MessageNotInConversationError,
   OpenRouterError,
   StreamError,
 } from "./errors";
 export type { Conversation, Message, NewConversation, NewMessage } from "./models";
 export type {
   CreateConversationInput,
+  ForkConversationInput,
   SendMessageInput,
   UpdateConversationInput,
 } from "./schemas";
 // Schemas (for validation)
-export { CreateConversationSchema, SendMessageSchema, UpdateConversationSchema } from "./schemas";
+export {
+  CreateConversationSchema,
+  ForkConversationSchema,
+  SendMessageSchema,
+  UpdateConversationSchema,
+} from "./schemas";
 
 // Service functions (public API)
 export {
   addMessage,
   createConversation,
   deleteConversation,
+  forkConversation,
   generateTitleFromMessage,
   getConversation,
   getMessages,

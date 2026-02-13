@@ -13,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { parseAIResponse } from "@/lib/story-parser";
 
 interface Message {
   id: string;
@@ -42,9 +43,19 @@ function formatMessagesAsText(
     }
 
     if (message.role === "user") {
-      lines.push(`> ${message.content}`, "");
+      lines.push("--- DIRECTION ---", "", message.content, "");
     } else {
-      lines.push(message.content, "");
+      const sections = parseAIResponse(message.content);
+      for (const section of sections) {
+        if (section.type === "narrative") {
+          lines.push("--- NARRATIVE ---", "", section.content, "");
+        } else if (section.type === "prompt") {
+          lines.push("--- PROMPT ---", "", section.content, "");
+        } else {
+          // Raw/legacy content
+          lines.push(section.content, "");
+        }
+      }
     }
   }
 
@@ -65,9 +76,19 @@ function formatMessagesAsMarkdown(
     }
 
     if (message.role === "user") {
-      lines.push(`> *${message.content}*`, "");
+      lines.push("### 📝 Direction", "", `> ${message.content}`, "");
     } else {
-      lines.push(message.content, "");
+      const sections = parseAIResponse(message.content);
+      for (const section of sections) {
+        if (section.type === "narrative") {
+          lines.push("### 📖 Narrative", "", section.content, "");
+        } else if (section.type === "prompt") {
+          lines.push("### 💭 Prompt", "", `*${section.content}*`, "");
+        } else {
+          // Raw/legacy content
+          lines.push(section.content, "");
+        }
+      }
     }
   }
 

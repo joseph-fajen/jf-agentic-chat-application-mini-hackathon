@@ -47,6 +47,13 @@ The core insight is simple: when co-writing a story with AI, you often wonder "w
 - ✅ Service layer function for forking logic
 - ✅ UI components for fork action
 
+### Post-MVP (Implemented)
+- ✅ Story export to .txt and .md formats
+- ✅ Export options (include prompts or AI-only)
+- ✅ Story layers with distinct visual styles (Direction/Narrative/Prompt)
+- ✅ Onboarding copy explaining interaction model ("You direct, the AI writes")
+- ✅ Branching Stories feature explanation in empty state
+
 ### Out of Scope (Future)
 - ❌ Tree visualization of all branches
 - ❌ Side-by-side branch comparison view
@@ -55,6 +62,8 @@ The core insight is simple: when co-writing a story with AI, you often wonder "w
 - ❌ Nested branching (branches of branches) — technically works, but no special UI
 - ❌ Sharing/exporting branch trees
 - ❌ Branch search/filtering
+
+See `FUTURE-IMPROVEMENTS.md` for detailed technical specifications on future enhancements.
 
 ## User Stories
 
@@ -272,15 +281,55 @@ A user can fork any conversation at any message point, continue the story in a d
 | Time overrun | Incomplete feature | Focus on core fork flow first; branch visualization is optional polish |
 | UI complexity | Confusing for users | Start with minimal UI (just a fork button + title suffix) |
 
+## Post-MVP Features (Implemented)
+
+### Story Layers
+
+The writing experience is now structured into three distinct layers, each with unique visual styling:
+
+| Layer | Creator | Purpose | Visual Style |
+|-------|---------|---------|--------------|
+| **Direction** | User | Steering input that guides the narrative | Blue bubble with "DIRECTION" label |
+| **Narrative** | AI | Story prose — the actual creative content | Muted gray with "NARRATIVE" label |
+| **Prompt** | AI | Question guiding user to next story beat | Amber/gold with lightbulb icon |
+
+**Implementation**:
+- System prompt instructs AI to use `[NARRATIVE]...[/NARRATIVE]` and `[PROMPT]...[/PROMPT]` markers
+- `src/lib/story-parser.ts` extracts sections from AI responses
+- `src/components/chat/message-bubble.tsx` renders each layer with distinct styling
+- Legacy messages (without markers) display unchanged
+
+### Export Functionality
+
+Users can download their stories in multiple formats:
+
+- **Formats**: Markdown (.md) or Plain Text (.txt)
+- **Content options**: Include user directions or AI responses only
+- **Layer headers**: Exported files include section markers (📝 Direction, 📖 Narrative, 💭 Prompt)
+
+**Location**: Download button in header, next to theme toggle
+
+### Onboarding & Empty State
+
+The empty state now explains:
+1. **Interaction model**: "You direct, the AI writes"
+2. **What to expect**: AI expands ideas into vivid prose
+3. **Example prompt**: Concrete starter to inspire users
+4. **Branching feature**: Callout explaining fork capability
+
 ## Appendix
 
-**Repository**: `joseph-fajen/agentic-chat-application-template`
+**Repository**: `joseph-fajen/jf-agentic-chat-application-mini-hackathon`
 
-**Branch**: `dynamous-workshop`
+**Branch**: `main`
 
-**Key Existing Files**:
+**Key Files**:
 - `src/core/database/schema.ts` — Database schema definitions
 - `src/features/chat/service.ts` — Chat business logic
-- `src/components/chat/message-bubble.tsx` — Message display component
+- `src/features/chat/constants.ts` — System prompt and AI configuration
+- `src/components/chat/message-bubble.tsx` — Message display with layer rendering
 - `src/components/chat/chat-sidebar.tsx` — Conversation list
+- `src/components/chat/export-story-button.tsx` — Export functionality
+- `src/lib/story-parser.ts` — Layer extraction from AI responses
 - `scripts/setup-db.ts` — Database setup script
+- `FUTURE-IMPROVEMENTS.md` — Technical roadmap for future development

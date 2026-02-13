@@ -1,16 +1,34 @@
-# AI Chat
+# Branching Stories
 
-A real-time AI chat application built with Next.js, Supabase, and OpenRouter. Features streaming responses, conversation management, markdown rendering with syntax-highlighted code blocks, and a polished dark blue theme.
+A collaborative AI storytelling application where you direct the narrative and the AI writes vivid prose. Fork your story at any point to explore alternate paths — like version control for creative writing.
+
+## Core Concept
+
+**You direct, the AI writes.** Describe a scene, introduce a character, or set the stage — the AI expands your ideas into narrative prose and prompts you for the next beat. Wonder "what if?" Click **Fork** to branch your story and explore alternate directions without losing your original path.
 
 ## Features
 
-- **Streaming AI responses** via Server-Sent Events (SSE)
-- **Conversation management** — create, rename, delete with confirmation
-- **Markdown rendering** with syntax highlighting and copy-to-clipboard on code blocks
+### Storytelling
+- **Collaborative writing** — You steer, AI generates prose
+- **Story layers** — Visual distinction between Direction (your input), Narrative (story prose), and Prompt (AI's guiding questions)
+- **Streaming responses** via Server-Sent Events (SSE)
+- **Markdown rendering** with syntax highlighting
+
+### Branching
+- **Fork any message** — Create alternate storylines from any point
+- **Non-destructive** — Original story remains unchanged
+- **Branch tracking** — "(branch)" suffix identifies forked stories
+- **Instant switching** — Navigate between branches via sidebar
+
+### Export
+- **Download stories** as Markdown (.md) or Plain Text (.txt)
+- **Content options** — Include your directions or export AI prose only
+- **Layer headers** — Exported files show Direction/Narrative/Prompt structure
+
+### Interface
 - **Dark/light theme** with blue accent colors
 - **Responsive mobile layout** with collapsible sidebar
-- **Persistent conversations** stored in Supabase Postgres via Drizzle ORM
-- **Toast notifications** for error feedback
+- **Conversation management** — create, rename, delete
 - **Keyboard shortcuts** — Enter to send, Shift+Enter for new line
 
 ## Stack
@@ -106,13 +124,42 @@ Features follow the **vertical slice pattern** — each feature owns its models,
 src/features/chat/
 ├── models.ts      # Drizzle types
 ├── schemas.ts     # Zod validation
-├── repository.ts  # Database queries
-├── service.ts     # Business logic
+├── repository.ts  # Database queries (including fork operations)
+├── service.ts     # Business logic (conversations, messages, forking)
 ├── stream.ts      # OpenRouter SSE streaming
+├── constants.ts   # System prompt, context limits
 ├── errors.ts      # Custom error classes
 ├── index.ts       # Public API
 └── tests/         # Feature tests
 ```
+
+### Key Components
+
+```
+src/components/chat/
+├── chat-layout.tsx         # Main layout with empty state onboarding
+├── message-bubble.tsx      # Renders Direction/Narrative/Prompt layers
+├── message-list.tsx        # Scrollable message container
+├── chat-sidebar.tsx        # Conversation list with branch indicators
+├── chat-input.tsx          # Message input with keyboard shortcuts
+├── export-story-button.tsx # Download stories as .md or .txt
+└── markdown-content.tsx    # Renders AI prose with syntax highlighting
+```
+
+### Utilities
+
+```
+src/lib/
+├── utils.ts          # Tailwind class merging (cn)
+└── story-parser.ts   # Extracts [NARRATIVE] and [PROMPT] sections from AI responses
+```
+
+## Documentation
+
+- `PRD.md` — Product requirements and feature specifications
+- `FUTURE-IMPROVEMENTS.md` — Technical roadmap for enhancements
+- `CLAUDE.md` — Development guidelines and patterns
+- `CODEBASE-GUIDE.md` — Architecture deep-dive
 
 ## License
 

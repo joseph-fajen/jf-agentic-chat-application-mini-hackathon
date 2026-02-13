@@ -24,6 +24,7 @@ export function ChatLayout() {
     createNewChat,
     renameConversation,
     deleteConversation,
+    forkConversation,
   } = useChat();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -37,6 +38,15 @@ export function ChatLayout() {
   const closeMobile = useCallback(() => {
     setIsMobileOpen(false);
   }, []);
+
+  const handleFork = useCallback(
+    (messageId: string) => {
+      if (activeConversationId) {
+        void forkConversation(activeConversationId, messageId);
+      }
+    },
+    [activeConversationId, forkConversation],
+  );
 
   const hasMessages = messages.length > 0 || isStreaming;
 
@@ -80,6 +90,7 @@ export function ChatLayout() {
             messages={messages}
             streamingContent={streamingContent}
             isStreaming={isStreaming}
+            onFork={handleFork}
           />
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
@@ -87,9 +98,9 @@ export function ChatLayout() {
               <MessageSquare className="text-primary size-8" />
             </div>
             <div className="text-center">
-              <h2 className="text-xl font-semibold">How can I help you today?</h2>
+              <h2 className="text-xl font-semibold">What story shall we tell?</h2>
               <p className="text-muted-foreground mt-1 text-sm">
-                Start a conversation by typing a message below.
+                Start your story by typing a message below.
               </p>
             </div>
           </div>

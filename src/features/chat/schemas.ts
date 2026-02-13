@@ -27,3 +27,9 @@ export const UpdateConversationSchema = z.object({
 });
 
 export type UpdateConversationInput = z.infer<typeof UpdateConversationSchema>;
+
+export const ForkConversationSchema = z.object({
+  messageId: z.string().uuid("Invalid message ID"),
+});
+
+export type ForkConversationInput = z.infer<typeof ForkConversationSchema>;

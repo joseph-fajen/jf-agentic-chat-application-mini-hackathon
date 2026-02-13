@@ -46,14 +46,14 @@ function SidebarContent({
           onClick={onNewChat}
         >
           <Plus className="size-4" />
-          New Chat
+          New Story
         </Button>
       </div>
       <ScrollArea className="flex-1 px-2">
         {sorted.length === 0 ? (
           <div className="text-muted-foreground flex flex-col items-center gap-2 px-4 py-8 text-center text-sm">
             <MessageSquare className="size-8 opacity-50" />
-            <p>No conversations yet</p>
+            <p>No stories yet</p>
           </div>
         ) : (
           <div className="space-y-0.5">

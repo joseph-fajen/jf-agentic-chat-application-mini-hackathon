@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Quick Reference
+
+```bash
+# After ANY code change, run:
+bun run lint && npx tsc --noEmit
+
+# Before committing:
+bun test
+```
+
+**Critical rules:**
+- Import Zod from `zod/v4`, not `zod`
+- Use named exports (default exports only for Next.js pages/layouts)
+- Features go in `src/features/{name}/` following vertical slice pattern
+- Never import from `repository.ts` outside its feature - use `service.ts`
+- Log with action states: `action_started`, `action_completed`, `action_failed`
+
 ## Commands
 
 ```bash
@@ -175,11 +192,28 @@ export { createProject, getProject, updateProject, deleteProject } from "./servi
 ## Database Commands
 
 ```bash
+bun run db:setup     # Create tables (supports TABLE_PREFIX for workshops)
 bun run db:generate  # Generate migrations from schema changes
 bun run db:migrate   # Run pending migrations
 bun run db:push      # Push schema directly (dev only)
 bun run db:studio    # Open Drizzle Studio GUI
 ```
+
+## Workshop: Table Prefix (Multi-Tenant)
+
+This codebase supports a shared database where multiple participants each get their own prefixed tables.
+
+**Setup:** Set `TABLE_PREFIX=yourname` in `.env`, then run `bun run db:setup`.
+This creates tables like `yourname_projects`, `yourname_chat_conversations`, `yourname_chat_messages`.
+The `users` table is always shared (unprefixed) since it syncs from Supabase Auth.
+If `TABLE_PREFIX` is not set, no prefix is applied and tables use their default names.
+
+**When adding new tables to `src/core/database/schema.ts`:**
+- Import and use the `t()` helper for ALL new table names (except `users`)
+- Example: `export const myTable = pgTable(t("my_table"), { ... })`
+- The `t()` function prepends the prefix from `TABLE_PREFIX` env var
+- Always add the corresponding `CREATE TABLE` statement to `scripts/setup-db.ts`
+- Use `"${p("my_table")}"` in the setup script SQL for prefixed table names
 
 ## Supabase + Drizzle Setup
 
@@ -256,6 +290,13 @@ bunx shadcn@canary add dialog alert-dialog
 - `src/components/` - app-level components (theme-provider, theme-toggle)
 - `src/shared/components/` - custom shared components
 - `src/lib/utils.ts` - `cn()` utility for merging Tailwind classes
+
+## React & Next.js Patterns
+
+- **Server Components** (default): Use for data fetching, database access, keeping secrets server-side
+- **Client Components** (`"use client"`): Use for interactivity, hooks, browser APIs, event handlers
+- Place `"use client"` at the top of files that need client-side features
+- Prefer Server Components; only add `"use client"` when required
 
 ## Code Style
 

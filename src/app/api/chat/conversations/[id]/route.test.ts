@@ -6,6 +6,8 @@ import type { Conversation } from "@/features/chat";
 const mockConversation: Conversation = {
   id: "conv-123",
   title: "Test Conversation",
+  parentConversationId: null,
+  branchFromMessageId: null,
   createdAt: new Date("2024-01-01"),
   updatedAt: new Date("2024-01-01"),
 };

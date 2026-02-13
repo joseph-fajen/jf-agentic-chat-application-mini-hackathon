@@ -17,9 +17,10 @@ interface MessageListProps {
   messages: Message[];
   streamingContent: string;
   isStreaming: boolean;
+  onFork?: (messageId: string) => void;
 }
 
-export function MessageList({ messages, streamingContent, isStreaming }: MessageListProps) {
+export function MessageList({ messages, streamingContent, isStreaming, onFork }: MessageListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const { scrollToBottom, isScrolledToBottom } = useAutoScroll(containerRef);
   const prevMessageCountRef = useRef(messages.length);
@@ -46,7 +47,13 @@ export function MessageList({ messages, streamingContent, isStreaming }: Message
     <div ref={containerRef} className="flex-1 overflow-y-auto">
       <div className="mx-auto max-w-3xl py-4">
         {messages.map((message) => (
-          <MessageBubble key={message.id} role={message.role} content={message.content} />
+          <MessageBubble
+            key={message.id}
+            id={message.id}
+            role={message.role}
+            content={message.content}
+            onFork={onFork}
+          />
         ))}
         {isStreaming && streamingContent && (
           <div className="flex gap-3 px-4 py-3">

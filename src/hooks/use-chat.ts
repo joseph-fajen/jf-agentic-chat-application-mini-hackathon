@@ -168,15 +168,18 @@ export function useChat() {
           throw new Error("No reader");
         }
 
-        const accumulated = await readSSEStream(reader, setStreamingContent);
+        await readSSEStream(reader, setStreamingContent);
 
-        if (accumulated) {
-          const assistantMessage = makeTempMessage(
-            conversationId ?? activeConversationId ?? "",
-            "assistant",
-            accumulated,
+        // Refetch messages to get real IDs from database (needed for forking)
+        const finalConversationId = conversationId ?? activeConversationId;
+        if (finalConversationId) {
+          const messagesRes = await fetch(
+            `/api/chat/conversations/${finalConversationId}/messages`,
           );
-          setMessages((prev) => [...prev, assistantMessage]);
+          if (messagesRes.ok) {
+            const data = (await messagesRes.json()) as { messages: ChatMessage[] };
+            setMessages(data.messages);
+          }
         }
       } catch (error) {
         if (error instanceof DOMException && error.name === "AbortError") {

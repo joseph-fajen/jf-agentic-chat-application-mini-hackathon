@@ -97,10 +97,14 @@ export function ChatLayout() {
             <div className="bg-primary/10 flex size-16 items-center justify-center rounded-2xl">
               <MessageSquare className="text-primary size-8" />
             </div>
-            <div className="text-center">
+            <div className="max-w-md text-center">
               <h2 className="text-xl font-semibold">What story shall we tell?</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Start your story by typing a message below.
+              <p className="text-muted-foreground mt-3 text-sm">
+                You direct, the AI writes. Describe a scene, introduce a character, or set the stage
+                — the AI will expand your ideas into vivid prose and keep the story moving.
+              </p>
+              <p className="text-muted-foreground mt-2 text-xs italic">
+                Try: &quot;A detective finds an unmarked envelope on her desk&quot;
               </p>
             </div>
           </div>

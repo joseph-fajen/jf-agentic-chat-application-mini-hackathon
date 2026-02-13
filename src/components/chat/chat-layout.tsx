@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquare } from "lucide-react";
+import { GitBranch, MessageSquare } from "lucide-react";
 import { useCallback, useState } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
@@ -93,7 +93,7 @@ export function ChatLayout() {
             onFork={handleFork}
           />
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8">
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 p-8">
             <div className="bg-primary/10 flex size-16 items-center justify-center rounded-2xl">
               <MessageSquare className="text-primary size-8" />
             </div>
@@ -105,6 +105,16 @@ export function ChatLayout() {
               </p>
               <p className="text-muted-foreground mt-2 text-xs italic">
                 Try: &quot;A detective finds an unmarked envelope on her desk&quot;
+              </p>
+            </div>
+            <div className="border-border/50 max-w-md rounded-lg border bg-card/50 p-4">
+              <div className="flex items-center gap-2">
+                <GitBranch className="text-primary size-4" />
+                <span className="text-sm font-medium">Branching Stories</span>
+              </div>
+              <p className="text-muted-foreground mt-2 text-sm">
+                Wonder &quot;what if?&quot; Click <strong>Fork</strong> on any message to branch
+                your story and explore an alternate path — without losing your original narrative.
               </p>
             </div>
           </div>

@@ -44,16 +44,17 @@ export function MessageBubble({ id, role, content, onFork }: MessageBubbleProps)
         )}
         {onFork && (
           <Button
-            variant="ghost"
-            size="icon"
+            variant="outline"
+            size="sm"
             className={cn(
-              "absolute -top-2 -right-2 size-6 opacity-0 transition-opacity group-hover:opacity-100",
-              "bg-background border shadow-sm hover:bg-accent",
+              "absolute -bottom-3 right-2 h-7 gap-1.5 px-2.5",
+              "bg-background text-muted-foreground hover:text-primary hover:border-primary",
+              "opacity-60 transition-all group-hover:opacity-100",
             )}
             onClick={() => onFork(id)}
-            title="Fork story from here"
           >
-            <GitBranch className="size-3" />
+            <GitBranch className="size-3.5" />
+            <span className="text-xs font-medium">Fork</span>
           </Button>
         )}
       </div>
